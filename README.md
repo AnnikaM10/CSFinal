@@ -8,32 +8,61 @@ Purpose of Application:
 
 ## API Documentation
 
-### Request Type: GET
-**Purpose**: Allows user to view the stock value of a given stock via its symbol
+## Route: `/api/stock_price`
 
-### Request Body
-- **symbol** (String): the symbol of the stock.
+- **Request Type:** `GET`
+- **Purpose:** Allows the user to view the stock value of a given stock via its symbol.
 
-### Response Format: JSON
-#### Success Response Example
-- **Code**: 200  
-- **Content**:  
-  ```json
-  {
-    "message": "message": f"Stock {symbol} is at ${stock_price} today"
-  }
+### Request Body:
+- `symbol` (String): The symbol of the stock.
 
-### Example Request
-  ```json
-  {
-    "symbol" = "IBM"
-  }
-  ```
-### Example Response
-  ```json
-  {
-    "message": "Stock IBM is at 234 today",
-    "status": "200"
-  }
-  ```
+### Example Request:
+```json
+{
+  "symbol": "IBM"
+}
+```
+
+### Response Format:
+- **Success Response Example:**
+  - **Code:** `200`
+  - **Content:**
+    ```json
+    {
+      "message": "Stock IBM is at $234 today"
+    }
+    ```
+
+## Route: `/api/add-stock`
+
+- **Request Type:** `POST`
+- **Purpose:** Allows the user to buy a stock via its input symbol and the quantity of the stock.
+
+### Request Body:
+- `symbol` (String): The symbol of the stock.
+
+### Example Request:
+```json
+{
+  "symbol": "IBM"
+  "quantity": 10
+}
+```
+
+### Response Format:
+- **Success Response Example:**
+  - **Code:** `200`
+  - **Content:**
+    ```json
+    {
+      "message": "Successfully added 10 shares of IBM"
+    }
+    ```
+
+
+## Route: `/api/delete-stock`
+## Route: `/api/view_port`
+## Route: `/api/calc_port`
+
+
 
