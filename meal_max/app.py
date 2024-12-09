@@ -5,12 +5,16 @@ from werkzeug.exceptions import BadRequest, Unauthorized
 
 from config import ProductionConfig
 from meal_max.db import db
-from meal_max.models.kitchen_model import UserStock
+from meal_max.models.kitchen_model import UserStocks
 from meal_max.models.mongo_session_model import login_user, logout_user
 from meal_max.models.user_model import Users
+import logging
 
 # Load environment variables from .env file
 load_dotenv()
+app = Flask(__name__)
+
+logging.basicConfig(level=logging.INFO)
 
 def create_app(config_class=ProductionConfig):
     app = Flask(__name__)
@@ -20,7 +24,7 @@ def create_app(config_class=ProductionConfig):
     with app.app_context():
         db.create_all()  # Recreate all tables
 
-    user_stock = UserStock()
+    user_stock = UserStocks()
 
     ####################################################
     #
@@ -153,7 +157,7 @@ def create_app(config_class=ProductionConfig):
             user_id = Users.get_id_by_username(username)
 
             # Load user's combatants into the battle model
-            login_user(user_id, battle_model)
+            login_user(user_id, user_stock)
 
             app.logger.info("User %s logged in successfully.", username)
             return jsonify({"message": f"User {username} logged in successfully."}), 200
@@ -212,7 +216,7 @@ def create_app(config_class=ProductionConfig):
     ##########################################################
 
     #This is to first buy a stock and add to database
-    @app.route('/api/stock_price', methods=['GET'])
+    @app.route('/api/stock-price', methods=['GET'])
     def view_stock() -> Response:
 
         app.logger.info('Finding stock price')
@@ -240,7 +244,7 @@ def create_app(config_class=ProductionConfig):
             #print out the stock symbol and its price
 
             ## print_stock_price(symbol, stock_price)
-            return jsonify({"message": f"Stock {symbol} is at ${price} today"}), 201
+            return jsonify({"message": "Success"}), 201
         except Exception as e:
             return jsonify({"error": f"Error adding stock to the database: {str(e)}"}), 500
         
@@ -311,7 +315,7 @@ def create_app(config_class=ProductionConfig):
         except Exception as e:
             return jsonify({"error": str(e)}), 500
         
-    @app.route('/api/view_port', methods=['GET'])
+    @app.route('/api/view-port', methods=['GET'])
     def view_portfolio() -> Response:
         """Route to view the user's stock portfolio."""
         try:
@@ -322,6 +326,36 @@ def create_app(config_class=ProductionConfig):
             return jsonify({"portfolio": portfolio}), 200
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+    
+    @app.route('/api/init-db', methods=['POST'])
+    def init_db():
+        """
+        Initialize or recreate database tables.
+
+        This route initializes the database tables defined in the SQLAlchemy models.
+        If the tables already exist, they are dropped and recreated to ensure a clean
+        slate. Use this with caution as all existing data will be deleted.
+
+        Returns:
+            Response: A JSON response indicating the success or failure of the operation.
+
+        Logs:
+            Logs the status of the database initialization process.
+        """
+        try:
+            with app.app_context():
+                app.logger.info("Dropping all existing tables.")
+                db.drop_all()  # Drop all existing tables
+                app.logger.info("Creating all tables from models.")
+                db.create_all()  # Recreate all tables
+            app.logger.info("Database initialized successfully.")
+            return jsonify({"status": "success", "message": "Database initialized successfully."}), 200
+        except Exception as e:
+            app.logger.error("Failed to initialize database: %s", str(e))
+            return jsonify({"status": "error", "message": "Failed to initialize database."}), 500
+
+    
+    return app
 
 
     
