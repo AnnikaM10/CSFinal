@@ -5,8 +5,7 @@ from werkzeug.exceptions import BadRequest, Unauthorized
 
 from config import ProductionConfig
 from meal_max.db import db
-from meal_max.models.battle_model import BattleModel
-from meal_max.models.kitchen_model import Meals
+from meal_max.models.kitchen_model import UserStock
 from meal_max.models.mongo_session_model import login_user, logout_user
 from meal_max.models.user_model import Users
 
@@ -21,7 +20,7 @@ def create_app(config_class=ProductionConfig):
     with app.app_context():
         db.create_all()  # Recreate all tables
 
-    battle_model = BattleModel()
+    user_stock = UserStock()
 
     ####################################################
     #
@@ -208,11 +207,44 @@ def create_app(config_class=ProductionConfig):
 
     ##########################################################
     #
-    # Meals
+    # Stocks
     #
     ##########################################################
 
+    #This is to first buy a stock and add to database
+    @app.route('/api/stock_price', methods=['GET'])
+    def view_stock() -> Response:
 
+        app.logger.info('Finding stock price')
+
+        #takes input via JSON data
+        #  from request
+        data = request.get_json()
+        symbol = data["symbol"]
+
+        if not data or "symbol" not in data:
+            return jsonify({"error": "Stock symbol are required"}), 400
+
+        # Validate stock symbol format
+        if not symbol or not symbol.isalnum():
+            return jsonify({"error": "Invalid stock symbol format"}), 400
+
+        try:
+
+            price = user_stock.get_stock_price(symbol)
+
+        except request.RequestException as e:
+            return jsonify({"error": f"Error fetching stock data: {str(e)}"}), 500
+
+        try:
+            #print out the stock symbol and its price
+
+            ## print_stock_price(symbol, stock_price)
+            return jsonify({"message": f"Stock {symbol} is at ${price} today"}), 201
+        except Exception as e:
+            return jsonify({"error": f"Error adding stock to the database: {str(e)}"}), 500
+
+    #######################################
     @app.route('/api/create-meal', methods=['POST'])
     def add_meal() -> Response:
         """
