@@ -39,7 +39,20 @@ class UserStocks(db.Model):
     #called second
     @classmethod
     def get_stock_price(cls, symbol: str ) -> float:
-        """Fetches the current closing price of a stock from the external API."""
+        """
+        Fetches the current closing price of a stock from an external API and updates the database.
+
+        Args:
+            symbol (str): The stock symbol to fetch the price for.
+
+        Returns:
+            float: The most recent closing price of the stock.
+
+        Raises:
+            ConnectionError: If there is an issue with fetching data from the external API.
+            ValueError: If the API response format is invalid or the required data is missing.
+            Exception: For any errors that occur during database operations.
+            """
         try:
             # Construct API URL for the stock symbol
             full_url = f"{api_base}function=TIME_SERIES_DAILY&symbol={symbol}&apikey={api_key}"
@@ -88,13 +101,30 @@ class UserStocks(db.Model):
     #called first
     @classmethod
     def add_stock(cls, symbol: str) -> None:
-        """Adds a new stock entry (only the symbol) to the database."""
+        """
+        Adds a new stock entry (only the symbol) to the database.
+
+        Args:
+            symbol (str): The stock symbol to be added.
+
+        Raises:
+            ValueError: If the stock symbol already exists in the database.
+            ValueError: If the stock symbol is not uppercase.
+            ValueError: If the stock symbol exceeds four characters.
+            Exception: For any errors that occur during database operations.
+        """
         # Check if the stock symbol already exists
         stock = cls.query.filter_by(symbol=symbol).first()
         
         if stock:
             raise ValueError(f"Stock with symbol '{symbol}' already exists.")
         
+        if not symbol.isupper():
+            raise ValueError(f"Stock with symbol '{symbol}' is invalid.")
+    
+        if len(symbol) > 4:
+            raise ValueError(f"Stock with symbol '{symbol}' is invalid.")
+
         # If stock does not exist, create a new entry with only the symbol
         try:
             new_stock = cls(symbol=symbol, price=0.0, quantity=0)  # Price and quantity default to 0
@@ -108,11 +138,23 @@ class UserStocks(db.Model):
 
     @classmethod
     def up_stock_quantity(cls, symbol: str, quantity: int) -> None:
-        """Increases the quantity of an existing stock."""
+        """
+        Increases the quantity of an existing stock.
+
+        Args:
+            symbol (str): The stock symbol whose quantity is to be increased.
+            quantity (int): The quantity to add to the existing stock.
+
+        Raises:
+            ValueError: If the stock symbol does not exist in the database.
+            ValueError: If the quantity is not greater than zero.
+            Exception: For any errors that occur during database operations.
+        """
         stock = cls.query.filter_by(symbol=symbol).first()
         if not stock:
             raise ValueError(f"Stock with symbol '{symbol}' not found.")
-        
+        if quantity <=0: 
+            raise ValueError("Quantity must be at least 0.")
         stock.quantity += quantity
         try:
             db.session.commit()
@@ -124,14 +166,27 @@ class UserStocks(db.Model):
     
     @classmethod
     def dec_stock_quantity(cls, symbol: str, quantity: int) -> None:
-        """Decreases the quantity of an existing stock."""
+        """
+        Decreases the quantity of an existing stock.
+
+        Args:
+            symbol (str): The stock symbol whose quantity is to be decreased.
+            quantity (int): The quantity to subtract from the existing stock.
+
+        Raises:
+            ValueError: If the stock symbol does not exist in the database.
+            ValueError: If the quantity to decrease exceeds the current stock quantity.
+            ValueError: If the quantity is not greater than zero.
+            Exception: For any errors that occur during database operations.
+        """
         stock = cls.query.filter_by(symbol=symbol).first()
         if not stock:
             raise ValueError(f"Stock with symbol '{symbol}' not found.")
         
         if stock.quantity < quantity:
             raise ValueError(f"Insufficient stock quantity for '{symbol}'.")
-        
+        if quantity <=0: 
+            raise ValueError("Quantity must be at least 0.")
         stock.quantity -= quantity
         try:
             db.session.commit()
@@ -144,7 +199,15 @@ class UserStocks(db.Model):
 
     @classmethod
     def get_user_stocks(cls) -> list:
-        """Fetches all stock records for the user."""
+        """
+        Fetches all stock records for the user.
+
+        Returns:
+            list: A list of stock symbols representing all the stocks the user owns.
+
+        Raises:
+            Exception: If there is an error while fetching stocks from the database.
+        """
         try:
             stocks = cls.query.all()
             return [stock.symbol for stock in stocks]
@@ -152,14 +215,14 @@ class UserStocks(db.Model):
             logger.error("Error fetching user stocks: %s", str(e))
             raise
 
-def update_cache_for_meal(mapper, connection, target):
+def update_cache_for_stock(mapper, connection, target):
     """
-    Update the Redis cache for a meal entry after an update or delete operation.
+    Update the Redis cache for a stock entry after an update or delete operation.
 
     This function is intended to be used as an SQLAlchemy event listener for the
-    `after_update` and `after_delete` events on the Meals model. When a meal is
+    `after_update` and `after_delete` events on the User_Stocks model. When a stock is
     updated or deleted, this function will either update the corresponding Redis
-    cache entry with the new meal details or remove the entry if the meal has
+    cache entry with the new stock details or remove the entry if the stock has
     been marked as deleted.
 
     Args:
@@ -167,14 +230,14 @@ def update_cache_for_meal(mapper, connection, target):
                          about the model being updated (automatically passed by SQLAlchemy).
         connection (Connection): The SQLAlchemy Connection object used for the
                                  database operation (automatically passed by SQLAlchemy).
-        target (Meals): The instance of the Meals model that was updated or deleted.
-                        The `target` object contains the updated meal data.
+        target (UserStock): The instance of the User_Stocks model that was updated or deleted.
+                        The `target` object contains the updated stock data.
 
     Side-effects:
-        - If the meal is marked as deleted (`target.deleted` is True), the function
+        - If the stock is marked as deleted (`target.deleted` is True), the function
           removes the corresponding cache entry from Redis.
-        - If the meal is not marked as deleted, the function updates the Redis cache
-          entry with the latest meal data using the `hset` command.
+        - If the stock is not marked as deleted, the function updates the Redis cache
+          entry with the latest stock data using the `hset` command.
     """
     cache_key = f"stock:{target.id}"
     if target.deleted:
@@ -186,5 +249,5 @@ def update_cache_for_meal(mapper, connection, target):
         )
 
 # Register the listener for update and delete events
-event.listen(UserStocks, 'after_update', update_cache_for_meal)
-event.listen(UserStocks, 'after_delete', update_cache_for_meal)
+event.listen(UserStocks, 'after_update', update_cache_for_stock)
+event.listen(UserStocks, 'after_delete', update_cache_for_stock)

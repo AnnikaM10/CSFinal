@@ -6,7 +6,6 @@ WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 COPY . /app
-
 # Install any needed packages specified in requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
@@ -14,7 +13,7 @@ RUN apt update && apt install -y curl
 
 RUN apt update && apt install -y jq
 
-# Install SQLite3
+# Install SQLite3~
 RUN apt-get update && apt-get install -y sqlite3
 
 # COPY ./sql/create_db.sh /app/sql/create_db.sh
@@ -31,3 +30,4 @@ EXPOSE 5001
 
 # Run the entrypoint script when the container launches
 CMD ["python", "app.py"]
+

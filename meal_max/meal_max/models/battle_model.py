@@ -3,7 +3,7 @@ import os
 import time
 from typing import Any, List
 
-from meal_max.models.kitchen_model import Meals
+from meal_max.meal_max.models.stocks_model import Meals
 from meal_max.utils.logger import configure_logger
 from meal_max.utils.random_utils import get_random
 

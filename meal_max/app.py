@@ -207,6 +207,55 @@ def create_app(config_class=ProductionConfig):
         except Exception as e:
             app.logger.error("Error during logout for username %s: %s", username, str(e))
             return jsonify({"error": "An unexpected error occurred."}), 500
+        
+    
+    @app.route('/api/update-password', methods=['POST'])
+    def update_password():
+        """
+        Route to update a user's password.
+
+        Expected JSON Input:
+            - username (str): The username of the user.
+            - old_password (str): The user's current password for authentication.
+            - new_password (str): The new password to set.
+
+        Returns:
+            JSON response indicating success or failure.
+
+        Raises:
+            400 error if input validation fails.
+            401 error if authentication of the old password fails.
+            500 error for any unexpected server-side issues.
+        """
+        data = request.get_json()
+        if not data or 'username' not in data or 'old_password' not in data or 'new_password' not in data:
+            app.logger.error("Invalid request payload for updating password.")
+            raise BadRequest("Invalid request payload. 'username', 'old_password', and 'new_password' are required.")
+
+        username = data['username']
+        old_password = data['old_password']
+        new_password = data['new_password']
+
+        try:
+            # Validate user credentials
+            if not Users.check_password(username, old_password):
+                app.logger.warning("Password update failed due to invalid old password for username: %s", username)
+                raise Unauthorized("Invalid username or old password.")
+
+            # Update password
+            Users.update_password(username, new_password)
+
+            app.logger.info("Password updated successfully for user: %s", username)
+            return jsonify({"message": f"Password updated successfully for user: {username}"}), 200
+
+        except Unauthorized as e:
+            return jsonify({"error": str(e)}), 401
+        except ValueError as e:
+            app.logger.error("Error updating password for username %s: %s", username, str(e))
+            return jsonify({"error": str(e)}), 400
+        except Exception as e:
+            app.logger.error("Unexpected error during password update for username %s: %s", username, str(e))
+            return jsonify({"error": "An unexpected error occurred."}), 500
 
 
     ##########################################################
