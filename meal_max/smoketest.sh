@@ -107,7 +107,7 @@ logout_user() {
 
 get_stock() {
   echo "Getting the stock..."
-  response=$(curl -s -X GET "$BASE_URL/stock-price")
+  response=$(curl -s -X GET "$BASE_URL/stock-price?symbol=IBM")
   echo "$response"
   # Check if the response contains combatants or an empty list
   if echo "$response" | grep -q '"message": "Success"'; then
@@ -130,8 +130,10 @@ get_stock() {
 # Function to add a meal (combatant)
 create_stock() {
   echo "Adding a stock..."
-  curl -s -X POST "$BASE_URL/add-stock" -H "Content-Type: application/json" \
-    -d '{"symbol":"IBM", "quantity":"0", "price":0.0}' | grep -q '"message": "Successfully added IBM to stock portfolio"'
+  response=$(curl -s -X POST "$BASE_URL/add-stock" -H "Content-Type: application/json" \
+    -d '{"symbol":"IBM", "quantity":0, "price":0.0}' | grep -q '"message": "Successfully added IBM to stock portfolio"')
+  
+  echo "$response"
   if [ $? -eq 0 ]; then
     echo "stock added successfully."
   else
@@ -142,8 +144,10 @@ create_stock() {
 
 buy_stock() {
   echo "Buying a stock..."
-  curl -s -X PUT "$BASE_URL/buy-stock" -H "Content-Type: application/json" \
-    -d '{"symbol":"IBM", "quantity":"5"}' | grep -q '"message": "Successfully added 5 shares of IBM"'
+  response=$(curl -s -X PUT "$BASE_URL/buy-stock" -H "Content-Type: application/json" \
+    -d '{"symbol":"IBM", "quantity":"5"}' | grep -q '"message": "Successfully added 5 shares of IBM"')
+  
+  echo "$response"
   if [ $? -eq 0 ]; then
     echo "stock bought successfully."
   else
@@ -333,9 +337,9 @@ init_db() {
 # Run all the steps in order
 check_health
 init_db
-create_user
-login_user
-logout_user
+# create_user
+# login_user
+# logout_user
 
 get_stock
 create_stock

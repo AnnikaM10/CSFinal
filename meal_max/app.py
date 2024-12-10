@@ -223,26 +223,21 @@ def create_app(config_class=ProductionConfig):
 
         #takes input via JSON data
         #  from request
-        data = request.get_json()
-        symbol = data["symbol"]
+        # data = request.get_json()
+        symbol = request.args.get('symbol')
 
-        if not data or "symbol" not in data:
-            return jsonify({"error": "Stock symbol are required"}), 400
+        # if not data or "symbol" not in data:
+        #     return jsonify({"error": "Stock symbol are required"}), 400
 
         # Validate stock symbol format
         if not symbol or not symbol.isalnum():
             return jsonify({"error": "Invalid stock symbol format"}), 400
 
-        try:
 
-            price = user_stock.get_stock_price(symbol)
-
-        except request.RequestException as e:
-            return jsonify({"error": f"Error fetching stock data: {str(e)}"}), 500
 
         try:
             #print out the stock symbol and its price
-
+            price = user_stock.get_stock_price(symbol)
             ## print_stock_price(symbol, stock_price)
             return jsonify({"message": "Success"}), 201
         except Exception as e:

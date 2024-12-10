@@ -18,7 +18,7 @@ configure_logger(logger)
 
 load_dotenv()
 api_key = os.getenv("API_KEY")
-api_base = 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol='
+api_base = 'https://www.alphavantage.co/query?'
 
 @dataclass
 class UserStocks(db.Model):
@@ -45,12 +45,19 @@ class UserStocks(db.Model):
             response.raise_for_status()  # Raise an exception for HTTP errors
             stock_data = response.json()
 
-            if "Time Series (Daily)" not in stock_data:
-                raise ValueError(f"Stock symbol '{symbol}' data not found.")
+            if "Meta Data" not in stock_data or "Time Series (Daily)" not in stock_data:
+                raise ValueError(f"Invalid API response format for symbol '{symbol}'. Response: {stock_data}")
         
             daily_data = stock_data["Time Series (Daily)"]
+            if not daily_data:
+                raise ValueError(f"No daily data available for symbol '{symbol}'.")
             recent_date = max(daily_data.keys())  # Get the most recent date
-            close_price = float(daily_data[recent_date]["4. close"])  # Get closing price
+            day_data = daily_data.get(recent_date)
+
+            if not day_data or "4. close" not in day_data:
+                raise KeyError(f"Missing closing price for the most recent date '{recent_date}'.")
+            
+            close_price = float(day_data["4. close"])
         
             # Store the price in the memory (for quick access)
         except requests.RequestException as e:
