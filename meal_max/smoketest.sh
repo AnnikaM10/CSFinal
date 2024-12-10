@@ -104,10 +104,25 @@ logout_user() {
 # Meals
 #
 ##############################################
+# Function to add a meal (combatant)
+create_stock() {
+  echo "Adding a stock..."
+  response=$(curl -s -X POST "$BASE_URL/add-stock" -H "Content-Type: application/json" \
+    -d "{\"symbol\":\"IBM\", \"quantity\":0, \"price\":0.0}")
+  echo "Response: $response"
+
+  if echo "$response" | grep -q '"message": "Successfully added stock to portfolio"'; then
+    echo "Stock retrieved successfully."
+  else
+    echo "Failed to add stock."
+    exit 1
+  fi
+}
 
 get_stock() {
-  echo "Getting the stock..."
-  response=$(curl -s -X GET "$BASE_URL/stock-price?symbol=IBM")
+  echo "Getting the stock price..."
+  response=$(curl -s -X GET "$BASE_URL/stock-price"  -H "Content-Type: application/json" \
+    -d '{"symbol":"IBM"}')
   echo "$response"
   # Check if the response contains combatants or an empty list
   if echo "$response" | grep -q '"message": "Success"'; then
@@ -127,27 +142,12 @@ get_stock() {
 }
 
 
-# Function to add a meal (combatant)
-create_stock() {
-  echo "Adding a stock..."
-  response=$(curl -s -X POST "$BASE_URL/add-stock" -H "Content-Type: application/json" \
-    -d '{"symbol":"IBM", "quantity":0, "price":0.0}' | grep -q '"message": "Successfully added IBM to stock portfolio"')
-  
-  echo "$response"
-  if [ $? -eq 0 ]; then
-    echo "stock added successfully."
-  else
-    echo "Failed to add stock."
-    exit 1
-  fi
-}
-
 buy_stock() {
   echo "Buying a stock..."
   response=$(curl -s -X PUT "$BASE_URL/buy-stock" -H "Content-Type: application/json" \
-    -d '{"symbol":"IBM", "quantity":"5"}' | grep -q '"message": "Successfully added 5 shares of IBM"')
+    -d '{"symbol":"IBM", "quantity":5}' | grep -q '"message": "Successfully added 5 shares of IBM"')
   
-  echo "$response"
+
   if [ $? -eq 0 ]; then
     echo "stock bought successfully."
   else
@@ -159,7 +159,7 @@ buy_stock() {
 sell_stock() {
   echo "Selling a stock..."
   curl -s -X POST "$BASE_URL/delete-stock" -H "Content-Type: application/json" \
-    -d '{"symbol":"IBM", "quantity":"5"}' | grep -q '"message": "Successfully sold 5 shares of IBM"'
+    -d '{"symbol":"IBM", "quantity":5}' | grep -q '"message": "Successfully sold 5 shares of IBM"'
   if [ $? -eq 0 ]; then
     echo "stock sold successfully."
   else
@@ -341,8 +341,8 @@ init_db
 # login_user
 # logout_user
 
-get_stock
 create_stock
+get_stock
 buy_stock
 sell_stock
 get_portfolio

@@ -223,8 +223,8 @@ def create_app(config_class=ProductionConfig):
 
         #takes input via JSON data
         #  from request
-        # data = request.get_json()
-        symbol = request.args.get('symbol')
+        data = request.get_json()
+        symbol = data["symbol"]
 
         # if not data or "symbol" not in data:
         #     return jsonify({"error": "Stock symbol are required"}), 400
@@ -232,8 +232,6 @@ def create_app(config_class=ProductionConfig):
         # Validate stock symbol format
         if not symbol or not symbol.isalnum():
             return jsonify({"error": "Invalid stock symbol format"}), 400
-
-
 
         try:
             #print out the stock symbol and its price
@@ -258,14 +256,16 @@ def create_app(config_class=ProductionConfig):
         #     return jsonify({"error": "Quantity must be a positive integer"}), 400
 
         try:
-            
             user_stock.add_stock(symbol)
             # Update stock quantity in the database (stub)
             # UserStock.update_stock_quantity(symbol, quantity)
             
-            return jsonify({"message": f"Successfully added {symbol} to stock portfolio"}), 201
+            return jsonify({"message": "Successfully added stock to portfolio"}), 201
+        except ValueError as ve:
+            return jsonify({"error": str(ve)}), 400
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+
 
     @app.route('/api/buy-stock', methods=['PUT'])
     def buy_stock() -> Response:

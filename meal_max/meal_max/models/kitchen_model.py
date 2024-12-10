@@ -28,6 +28,7 @@ class UserStocks(db.Model):
     symbol: str = db.Column(db.String(80), unique=True, nullable=False)
     price: float = db.Column(db.Float, nullable=False)
     quantity: int = db.Column(db.Integer, default=0)
+    deleted = db.Column(db.Boolean, default=False)
 
     def __post_init__(self):
         if self.price < 0:
@@ -35,6 +36,7 @@ class UserStocks(db.Model):
         if self.quantity < 0:
             raise ValueError("Quantity must be at least 0.")
     
+    #called second
     @classmethod
     def get_stock_price(cls, symbol: str ) -> float:
         """Fetches the current closing price of a stock from the external API."""
@@ -45,17 +47,17 @@ class UserStocks(db.Model):
             response.raise_for_status()  # Raise an exception for HTTP errors
             stock_data = response.json()
 
-            if "Meta Data" not in stock_data or "Time Series (Daily)" not in stock_data:
-                raise ValueError(f"Invalid API response format for symbol '{symbol}'. Response: {stock_data}")
+            # if "Meta Data" not in stock_data or "Time Series (Daily)" not in stock_data:
+            #     raise ValueError(f"Invalid API response format for symbol '{symbol}'. Response: {stock_data}")
         
             daily_data = stock_data["Time Series (Daily)"]
-            if not daily_data:
-                raise ValueError(f"No daily data available for symbol '{symbol}'.")
+            # if not daily_data:
+            #     raise ValueError(f"No daily data available for symbol '{symbol}'.")
             recent_date = max(daily_data.keys())  # Get the most recent date
             day_data = daily_data.get(recent_date)
 
-            if not day_data or "4. close" not in day_data:
-                raise KeyError(f"Missing closing price for the most recent date '{recent_date}'.")
+            # if not day_data or "4. close" not in day_data:
+            #     raise KeyError(f"Missing closing price for the most recent date '{recent_date}'.")
             
             close_price = float(day_data["4. close"])
         
@@ -63,15 +65,27 @@ class UserStocks(db.Model):
         except requests.RequestException as e:
             raise ConnectionError(f"Error fetching data from API: {str(e)}")
         
-        price_for_stock = cls(symbol=symbol, price=close_price)
         try:
-            db.session.add(price_for_stock)
-            db.session.commit()
-            logger.info("Stock Price successfully added to the database: %s at %f", symbol, close_price)
+            # Check if the stock exists in the database
+            stock = cls.query.filter_by(symbol=symbol).first()
+
+            if stock:
+                # Update the existing stock's price
+                stock.price = close_price
+                logger.info("Stock price updated: %s to %f", symbol, close_price)
+                db.session.commit()
+            
+
+            # Commit the changes to the database
+            
             return close_price
-        except ValueError as e:
-            raise e
+
+        except Exception as e:
+            db.session.rollback()
+            logger.error("Error updating or adding stock: %s", str(e))
+            raise
     
+    #called first
     @classmethod
     def add_stock(cls, symbol: str) -> None:
         """Adds a new stock entry (only the symbol) to the database."""
