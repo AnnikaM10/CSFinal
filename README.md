@@ -8,7 +8,7 @@ Purpose of Application:
 
 ## API Documentation
 
-## Route: `/api/stock_price`
+## Route: `/api/stock-price`
 
 - **Request Type:** `GET`
 - **Purpose:** Allows the user to view the stock value of a given stock via its symbol.
@@ -60,11 +60,10 @@ Purpose of Application:
     }
     ```
 
+## Route: `/api/buy-stock`
 
-## Route: `/api/sell-stock`
-
-- **Request Type:** `POST`
-- **Purpose:** Allows the user to sell stock via its input symbol and the quantity of the stock.
+- **Request Type:** `PUT`
+- **Purpose:** Allows the user to buy stock via its input symbol and the quantity of the stock.
 
 ### Request Body:
 - `symbol` (String): The symbol of the stock.
@@ -84,25 +83,45 @@ Purpose of Application:
   - **Content:**
     ```json
     {
+      "message": "Successfully added 10 shares of IBM"
+    }
+    ```
+
+## Route: `/api/delete-stock`
+
+- **Request Type:** `POST`
+- **Purpose:** Allows the user to sell stock via its input symbol and the quantity of the stock.
+
+### Request Body:
+- `symbol` (String): The symbol of the stock.
+- `quantity` (int): The number of stock to sell.
+
+### Example Request:
+```json
+{
+  "symbol": "IBM"
+  "quantity": 10
+}
+```
+
+### Response Format:
+- **Success Response Example:**
+  - **Code:** `200`
+  - **Content:**
+    ```json
+    {
       "message": "Successfully sold 10 shares of IBM"
     }
     ```
 
+
+
   
-## Route: `/api/view_port`
+## Route: `/api/view-port`
 
 - **Request Type:** `GET`
-- **Purpose:** Allows the user to view a list of each stock and their quantity that user owns
+- **Purpose:** Allows the user to view a list of each stock of which they own shares.
 
-### Request Body:
-- `TBD`
-
-### Example Request:
-```json
-{
-  "TBD"
-}
-```
 
 ### Response Format:
 - **Success Response Example:**
@@ -110,34 +129,26 @@ Purpose of Application:
   - **Content:**
     ```json
     {
-      "TBD"
+      "portfolio": [
+        {
+            "symbol": "AAPL",
+            "name": "Apple Inc.",
+            "shares": 10,
+            "average_price": 150.25
+        },
+        {
+            "symbol": "GOOGL",
+            "name": "Alphabet Inc.",
+            "shares": 5,
+            "average_price": 2800.50
+        },
+        {
+            "symbol": "TSLA",
+            "name": "Tesla Inc.",
+            "shares": 3,
+            "average_price": 720.00
+        }
+    ]
     }
     ```
-
-## Route: `/api/calc_port`
-
-- **Request Type:** `GET`
-- **Purpose:** Allows the user to view the total of what all their stock is worth
-
-### Request Body:
-- `TBD`
-
-### Example Request:
-```json
-{
-  "TBD"
-}
-```
-
-### Response Format:
-- **Success Response Example:**
-  - **Code:** `200`
-  - **Content:**
-    ```json
-    {
-      "TBD"
-    }
-    ```
-
-
-
+<!-- ![Image not found](smoketest.pdf "This is a local image") -->

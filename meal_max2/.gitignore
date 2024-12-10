@@ -1,5 +1,0 @@
-# Ignore Python virtual environments
-venv/
-env/
-*.egg-info/
-__pycache__/
