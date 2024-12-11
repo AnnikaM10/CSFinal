@@ -155,9 +155,9 @@ Purpose of Application:
 <img src="smoketest.png" alt="Description" width="600">
 
 ### Test Stock Model
-<img src="test_stock_model.png" alt="Description" width="1300">
+<img src="test_stock_model.png" alt="Description" width="2000">
 
 ### Test User List Model
-<img src="test_user_list_model.png" alt="Description" width="1300">
+<img src="test_user_list_model.png" alt="Description" width="2000">
 
   
