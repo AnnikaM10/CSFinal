@@ -267,6 +267,25 @@ def create_app(config_class=ProductionConfig):
     #This is to first buy a stock and add to database
     @app.route('/api/stock-price', methods=['GET'])
     def view_stock() -> Response:
+        """
+        Fetches and returns the stock price for the given stock symbol.
+
+        This route receives a stock symbol in the request body as JSON, validates its format, 
+        and fetches the current stock price using the `get_stock_price` method. If successful, 
+        it returns a success message; otherwise, it returns an error message with appropriate 
+        status codes.
+
+        Request:
+            - JSON body containing the stock symbol (`symbol`).
+
+        Returns:
+            Response: 
+                - If successful: A JSON response with a success message and HTTP status 201.
+                - If validation or fetching fails: A JSON response with an error message and the corresponding HTTP status code (400 for invalid symbol format, 500 for server errors).
+
+        Logs:
+            Logs the process of fetching the stock price, including success or failure.
+        """
 
         app.logger.info('Finding stock price')
 
@@ -274,9 +293,6 @@ def create_app(config_class=ProductionConfig):
         #  from request
         data = request.get_json()
         symbol = data["symbol"]
-
-        # if not data or "symbol" not in data:
-        #     return jsonify({"error": "Stock symbol are required"}), 400
 
         # Validate stock symbol format
         if not symbol or not symbol.isalnum():
@@ -292,6 +308,26 @@ def create_app(config_class=ProductionConfig):
         
     @app.route('/api/add-stock', methods=['POST'])
     def add_stock() -> Response:
+        """
+        Adds a stock symbol to the user's portfolio.
+
+        This route receives a stock symbol and quantity in the request body as JSON, 
+        and adds the stock to the user's portfolio. If the stock is successfully added, 
+        it returns a success message. If any required fields are missing or if there 
+        is an error in adding the stock, an error message is returned with the appropriate status code.
+
+        Request:
+            - JSON body containing the stock symbol (`symbol`) and quantity (`quantity`).
+
+        Returns:
+            Response: 
+                - If successful: A JSON response with a success message and HTTP status 201.
+                - If validation fails (missing required fields): A JSON response with an error message and HTTP status 400.
+                - If an error occurs while adding the stock: A JSON response with an error message and HTTP status 500.
+
+        Logs:
+            Logs the process of adding a stock to the portfolio, including any errors that occur.
+        """
         """Route to add stock to the user's portfolio."""
         data = request.get_json()
         
@@ -299,15 +335,10 @@ def create_app(config_class=ProductionConfig):
             return jsonify({"error": "Stock symbol and quantity are required"}), 400
         
         symbol = data["symbol"]
-        # quantity = data["quantity"]
-
-        # if not isinstance(quantity, int) or quantity <= 0:
-        #     return jsonify({"error": "Quantity must be a positive integer"}), 400
 
         try:
             user_stock.add_stock(symbol)
             # Update stock quantity in the database (stub)
-            # UserStock.update_stock_quantity(symbol, quantity)
             
             return jsonify({"message": "Successfully added stock to portfolio"}), 201
         except ValueError as ve:
@@ -318,6 +349,29 @@ def create_app(config_class=ProductionConfig):
 
     @app.route('/api/buy-stock', methods=['PUT'])
     def buy_stock() -> Response:
+        """
+        Adds a specified quantity of stock to the user's portfolio.
+
+        This route receives a stock symbol and quantity in the request body as JSON, 
+        and adds the specified quantity of the stock to the user's portfolio. The route 
+        validates that the quantity is a positive integer. If successful, it returns a 
+        success message with the stock symbol and quantity. If any validation fails or 
+        an error occurs, an appropriate error message is returned.
+
+        Request:
+            - JSON body containing the stock symbol (`symbol`) and quantity (`quantity`).
+
+        Returns:
+            Response: 
+                - If successful: A JSON response with a success message and HTTP status 201.
+                - If validation fails (missing required fields or invalid quantity): A JSON response 
+                with an error message and HTTP status 400.
+                - If an error occurs while updating the stock quantity: A JSON response with an error 
+                message and HTTP status 500.
+
+        Logs:
+            Logs the process of adding stock to the portfolio, including validation and any errors that occur.
+        """
         """Route to add stock to the user's portfolio."""
         data = request.get_json()
         
@@ -340,6 +394,29 @@ def create_app(config_class=ProductionConfig):
 
     @app.route('/api/delete-stock', methods=['POST'])
     def sell_stock() -> Response:
+        """
+        Removes a specified quantity of stock from the user's portfolio.
+
+        This route receives a stock symbol and quantity in the request body as JSON, 
+        and removes the specified quantity of the stock from the user's portfolio. 
+        The route validates that the quantity is a positive integer. If successful, 
+        it returns a success message with the stock symbol and quantity. If any 
+        validation fails or an error occurs, an appropriate error message is returned.
+
+        Request:
+            - JSON body containing the stock symbol (`symbol`) and quantity (`quantity`).
+
+        Returns:
+            Response: 
+                - If successful: A JSON response with a success message and HTTP status 200.
+                - If validation fails (missing required fields or invalid quantity): A JSON response 
+                with an error message and HTTP status 400.
+                - If an error occurs while updating the stock quantity: A JSON response with an error 
+                message and HTTP status 500.
+
+        Logs:
+            Logs the process of removing stock from the portfolio, including validation and any errors that occur.
+        """
         """Route to delete (sell) stock from the user's portfolio."""
         data = request.get_json()
         
@@ -361,6 +438,22 @@ def create_app(config_class=ProductionConfig):
         
     @app.route('/api/view-port', methods=['GET'])
     def view_portfolio() -> Response:
+        """
+        Retrieves and displays the user's stock portfolio.
+
+        This route fetches the user's current stock portfolio and returns it in a JSON format.
+        If the portfolio is empty or there is an error in fetching the data, an appropriate 
+        error message is returned. The portfolio is retrieved using the `get_user_stocks` method.
+
+        Returns:
+            Response: 
+                - If successful: A JSON response containing the user's portfolio and HTTP status 200.
+                - If no stocks are found: A JSON response with an error message and HTTP status 404.
+                - If an error occurs while fetching the portfolio: A JSON response with an error message and HTTP status 500.
+
+        Logs:
+            Logs the process of fetching the user's portfolio, including any errors that occur.
+        """
         """Route to view the user's stock portfolio."""
         try:
             portfolio = user_stock.get_user_stocks()

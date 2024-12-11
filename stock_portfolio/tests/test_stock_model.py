@@ -98,7 +98,6 @@ def test_decrease_stock_invalid_quantity(session):
 
 
 def test_decrease_stock_invalid_symbol(app):
-    """Test decreasing quantity for a non-existent stock."""
     """Test increasing quantity for a non-existent stock."""
     with app.app_context():
         UserStocks.add_stock("AAPL")
@@ -143,7 +142,6 @@ def test_view_empty_portfolio(session):
 def test_view_portfolio_full_details(session, mocker):
     """Test viewing a user's full stock portfolio."""
     UserStocks.add_stock("AAPL")
-    #UserStocks.up_stock_quantity("AAPL", 10)
 
     # Mock stock price API
     mocker.patch('stock_portfolio.models.stock_model.UserStocks.get_stock_price', return_value=150.25)
@@ -152,6 +150,3 @@ def test_view_portfolio_full_details(session, mocker):
     assert len(portfolio) == 1
     stock_symbol = portfolio[0]
     assert stock_symbol == "AAPL"
-    #assert stock.quantity == 10
-    #assert stock.price == 150.25
-    # assert stock.total_value == 1502.5  # Validate total value

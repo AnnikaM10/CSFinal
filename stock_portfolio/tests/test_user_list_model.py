@@ -16,9 +16,6 @@ def sample_stock1():
     return {
         "id": 1,
         "stock": "Spaghetti",
-        "cuisine": "Italian",
-        "price": 12.5,
-        "difficulty": "MED"
     }
 
 @pytest.fixture
@@ -26,9 +23,6 @@ def sample_stock2():
     return {
         "id": 2,
         "stock": "Pizza",
-        "cuisine": "Italian",
-        "price": 15.0,
-        "difficulty": "LOW"
     }
 
 @pytest.fixture
@@ -101,72 +95,3 @@ def test_prep_user_full(user_list_model, sample_users):
 
     # Assert that the combatants list still contains only the original 2 combatants
     assert len(user_list_model.users) == 2, "users list should still contain only 2 users after trying to add a third."
-
-
-##########################################################
-# Battle
-##########################################################
-
-# def test_get_battle_score(battle_model, sample_meal1, sample_meal2):
-#     """Test the get_battle_score method."""
-
-#     """Test combatant 1"""
-#     combatant_1, combatant_2 = sample_meal1, sample_meal2
-#     expected_score_1 = (12.5 * 7) - 2  # 12.5 * 7 - 2 = 85.5
-#     assert battle_model.get_battle_score(combatant_1) == expected_score_1, f"Expected score: {expected_score_1}, got {battle_model.get_battle_score(combatant_1)}"
-
-#     expected_score_2 = (15.0 * 7) - 3  # 15.0 * 7 - 3 = 102.0
-#     assert battle_model.get_battle_score(combatant_2) == expected_score_2, f"Expected score: {expected_score_2}, got {battle_model.get_battle_score(combatant_2)}"
-
-# def test_battle(battle_model, sample_combatants, sample_meal1, sample_meal2, caplog, mocker):
-#     """Test the battle method with sample combatants."""
-
-#     battle_model.combatants.extend(sample_combatants)
-
-#     # Mock the battle functions
-#     mocker.patch("meal_max.models.battle_model.BattleModel.get_battle_score", side_effect=[85.5, 102.0])
-#     mocker.patch("meal_max.models.battle_model.get_random", return_value=0.42)
-#     mock_update_stats = mocker.patch("meal_max.models.battle_model.Meals.update_meal_stats")
-
-#     # Mock the TTLs to simulate unexpired cache
-#     battle_model.combatant_ttls = {
-#         combatant: time.time() + 60 for combatant in sample_combatants
-#     }
-
-#     battle_model.meals_cache[1] = sample_meal1
-#     battle_model.meals_cache[2] = sample_meal2
-
-#     # Call the battle method
-#     winner_meal = battle_model.battle()
-
-#     # Ensure the winner is combatant_2 since score_2 > score_1
-#     assert winner_meal == "Pizza", f"Expected combatant 2 to win, but got {winner_meal}"
-
-#     # Ensure update_stats was called correctly for both winner and loser
-#     mock_update_stats.assert_any_call(1, 'loss')  # combatant_1 is the loser
-#     mock_update_stats.assert_any_call(2, 'win')   # combatant_2 is the winner
-
-#     # Check that combatant_1 was removed from the combatants list
-#     assert len(battle_model.combatants) == 1, "Losing combatant was not removed from the list."
-#     assert battle_model.combatants[0] == 2, "Expected combatant 2 to remain in the list."
-
-#     # Check that the logger was called with the expected message
-#     assert "Two meals enter, one meal leaves!" in caplog.text, "Expected battle cry log message not found."
-#     assert "The winner is: Pizza" in caplog.text, "Expected winner log message not found."
-
-# def test_battle_with_empty_combatants(battle_model):
-#     """Test that the battle method raises a ValueError when there are fewer than two combatants."""
-
-#     # Call the battle method and expect a ValueError
-#     with pytest.raises(ValueError, match="Two combatants must be prepped for a battle."):
-#         battle_model.battle()
-
-# def test_battle_with_one_combatant(battle_model, sample_meal1):
-#     """Test that the battle method raises a ValueError when there's only one combatant."""
-
-#     # Mock the combatants list with only one combatant
-#     battle_model.combatants.append(sample_meal1)
-
-#     # Call the battle method and expect a ValueError
-#     with pytest.raises(ValueError, match="Two combatants must be prepped for a battle."):
-#         battle_model.battle()
