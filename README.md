@@ -152,6 +152,6 @@ Purpose of Application:
     }
     ```
 ### SmokeTest
-- ![Image not found](smoketest.png "Smoketest")
-  <img src="smoketest.png" alt="Description" width="300">
+- <img src="smoketest.png" alt="Description" width="600">
+
   
