@@ -151,4 +151,5 @@ Purpose of Application:
     ]
     }
     ```
-<!-- ![Image not found](smoketest.pdf "This is a local image") -->
+
+![Image not found](smoketest.png "Smoketest")
