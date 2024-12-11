@@ -152,6 +152,12 @@ Purpose of Application:
     }
     ```
 ### SmokeTest
-- <img src="smoketest.png" alt="Description" width="600">
+<img src="smoketest.png" alt="Description" width="600">
+
+### Test Stock Model
+<img src="test_stock_model.png" alt="Description" width="600">
+
+### Test User List Model
+<img src="test_user_list_model" alt="Description" width="600">
 
   
