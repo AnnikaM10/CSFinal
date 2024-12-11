@@ -151,5 +151,5 @@ Purpose of Application:
     ]
     }
     ```
-
-![Image not found](smoketest.png "Smoketest")
+### SmokeTest
+- ![Image not found](smoketest.png "Smoketest")
